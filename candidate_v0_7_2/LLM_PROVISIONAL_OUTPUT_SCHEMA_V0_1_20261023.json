@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "KGE candidate provisional LLM assessment output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "candidate_identity",
+    "summary_ja",
+    "proposed_f_class",
+    "proposed_hml",
+    "stock_phenotype_assessment",
+    "source_independence",
+    "candidate_specific_primary_paper_status",
+    "disease_model_validity",
+    "kge_rank_causality",
+    "evidence_claims",
+    "contradictions",
+    "missing_evidence",
+    "formal_assessment_mutated",
+    "expert_review_required"
+  ],
+  "properties": {
+    "status": {
+      "const": "PROVISIONAL_LLM_NOT_EXPERT_REVIEWED"
+    },
+    "candidate_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disease_iri",
+        "mouse_iri",
+        "family",
+        "final_rank"
+      ],
+      "properties": {
+        "disease_iri": {
+          "type": "string"
+        },
+        "mouse_iri": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string"
+        },
+        "final_rank": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "summary_ja": {
+      "type": "string"
+    },
+    "proposed_f_class": {
+      "enum": [
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "Not assessed"
+      ]
+    },
+    "proposed_hml": {
+      "enum": [
+        "High",
+        "Medium",
+        "Low",
+        "Not assessed"
+      ]
+    },
+    "stock_phenotype_assessment": {
+      "type": "string"
+    },
+    "source_independence": {
+      "enum": [
+        "SUPPORTED",
+        "NOT_ESTABLISHED",
+        "CONTRADICTED",
+        "NOT_ASSESSED"
+      ]
+    },
+    "candidate_specific_primary_paper_status": {
+      "enum": [
+        "IDENTIFIED",
+        "NOT_IDENTIFIED",
+        "CONTRADICTED"
+      ]
+    },
+    "disease_model_validity": {
+      "enum": [
+        "SUPPORTED",
+        "PARTIALLY_SUPPORTED",
+        "NOT_ESTABLISHED",
+        "CONTRADICTED"
+      ]
+    },
+    "kge_rank_causality": {
+      "const": "NOT_ESTABLISHED"
+    },
+    "evidence_claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim",
+          "support_status",
+          "evidence_identifiers",
+          "reasoning",
+          "limitations"
+        ],
+        "properties": {
+          "claim": {
+            "type": "string"
+          },
+          "support_status": {
+            "enum": [
+              "SUPPORTED",
+              "PARTIAL",
+              "NOT_SUPPORTED",
+              "CONTRADICTED",
+              "NOT_ASSESSED"
+            ]
+          },
+          "evidence_identifiers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reasoning": {
+            "type": "string"
+          },
+          "limitations": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "formal_assessment_mutated": {
+      "const": false
+    },
+    "expert_review_required": {
+      "const": true
+    }
+  }
+}
