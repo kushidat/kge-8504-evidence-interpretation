@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.env.*
+.streamlit/secrets.toml
+*.pem
+*.key
+*.p12
+*.sqlite
+*.sqlite3
+*.db
+*.log
+artifacts/
+outputs/
