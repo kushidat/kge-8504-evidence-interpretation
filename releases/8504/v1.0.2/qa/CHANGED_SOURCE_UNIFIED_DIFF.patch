@@ -1,0 +1,659 @@
+--- v1.0.1/kge_evidence_bundle_readonly_v0_6.py
++++ v1.0.2/kge_evidence_bundle_readonly_v1_0_2.py
+@@ -1,17 +1,12 @@
+ #!/usr/bin/env python3
+ # -*- coding: utf-8 -*-
+-"""Read-only candidate Evidence Bundle adapter for KGE Mouse interpretation.
+-
+-Scope (V0.6 isolated candidate):
+-- Reads only pinned Frozen Train and pinned GO derived evidence sources.
+-- Does not modify G-FINAL ranking, helper, source files, or production apps.
+-- Does not access PRIMARY_TEST / TEST / withheld, validation, or model training.
+-- Does not perform network retrieval or LLM calls.
+-- Historical SPARQL+LLM outputs are bound as a pinned 7-file consensus group-level context.
+-- A separately pinned, curated candidate-specific external evidence snapshot may be read
+-  for RBRC-GSC0231 only. It is not raw source bytes and does not imply release authority.
+-
+-This module is an implementation candidate, not a frozen schema authority.
++"""8504 v1.0.2 Emergency scope-corrected read-only evidence adapter.
++
++Frozen Train and GO evidence remain available for any selected disease/candidate.
++Old single-disease SPARQL+LLM files and single-mouse external snapshot are not
++loaded, inferred, or presented as generic evidence. All unavailable comparison
++features are explicitly NOT_CONNECTED, never NEGATIVE or NO_MATCH.
++No network access, LLM calls, retraining or rank mutation.
+ """
+ from __future__ import annotations
+ 
+@@ -32,8 +27,8 @@
+     InProcessRankingAuthority,
+ )
+ 
+-SCHEMA_ID = "KGE_MOUSE_EVIDENCE_BUNDLE_DRAFT_V0_5_20261023"
+-IMPLEMENTATION_STATUS = "ISOLATED_CANDIDATE_NOT_RELEASED"
++SCHEMA_ID = "KGE_MOUSE_EVIDENCE_BUNDLE_SCOPE_CORRECTED_V1_0_2_20261028"
++IMPLEMENTATION_STATUS = "MAC_LOCAL_EMERGENCY_SCOPE_CORRECTION_V1_0_2_UNDER_REVIEW"
+ 
+ PROJECT_ROOT = Path.home() / "projects/kge/bridge_node2vec_2026"
+ TRAIN_EXPECTED_SHA256 = "9b9e5fab42f1754b2462a5a6dd77c44ee31ff3b21b2c8eda4d7b45f36242e806"
+@@ -69,25 +64,6 @@
+ GO_PREFIX = "http://purl.obolibrary.org/obo/GO_"
+ HP_PREFIX = "http://purl.obolibrary.org/obo/HP_"
+ MP_PREFIX = "http://purl.obolibrary.org/obo/MP_"
+-
+-
+-MONDO_EVAL_ROOT = Path.home() / "projects/mondo_eval"
+-HISTORICAL_SPARQL_LLM_FILES = (
+-    (MONDO_EVAL_ROOT / "outputs2/2026-05-26T22-50-13_MONDO_0005148_RBRC-GSC0032_integrated_candidate_interpretation.json", "924ef28519e369201d31f0760a9ca4d33b7547fc8bd8c8473eab01d81e9bbaf3"),
+-    (MONDO_EVAL_ROOT / "outputs2/2026-05-27T02-11-01_MONDO_0005148_RBRC-GSC0032_integrated_candidate_interpretation.json", "581221ff33815ab3a303fea1c979e5d0c18978fa0c7577097c971039cc6685c4"),
+-    (MONDO_EVAL_ROOT / "outputs2/2026-05-27T02-41-07_MONDO_0005148_RBRC-GSC0032_integrated_candidate_interpretation.json", "7d11c351d95949bc696c4336262308fadfa9d9c3f2e7d536f6c1d206c4d38477"),
+-    (MONDO_EVAL_ROOT / "outputs2/2026-05-27T03-00-48_MONDO_0005148_RBRC-GSC0032_integrated_candidate_interpretation.json", "a949137d9861e7e1b3cef2f02a60e2fc9d5ff5d2976d935c6a13d28c1e2f0ed7"),
+-    (MONDO_EVAL_ROOT / "outputs2/2026-06-03T15-56-03_MONDO_0005148_RBRC-GSC0032_integrated_candidate_interpretation.json", "fc274129eae0b1dd960f1b9f912f5eb84a5636cf812b7434688f40f18e595114"),
+-    (MONDO_EVAL_ROOT / "outputs2/2026-06-03T16-38-30_MONDO_0005148_RBRC-GSC0032_integrated_candidate_interpretation.json", "ae79d7f8c36b6472793a1ef3dd2d0467ee91a1ae13a3507086ba294cebcebae1"),
+-    (MONDO_EVAL_ROOT / "outputs2/2026-06-06T22-48-35_MONDO_0005148_RBRC-GSC0032_integrated_candidate_interpretation.json", "298eb6afdbf53f89715ff83fdde79f9c19863a88720c752185063f6ca8c47920"),
+-)
+-HISTORICAL_BOUND_DISEASE_IRI = "http://purl.obolibrary.org/obo/MONDO_0005148"
+-
+-CANDIDATE_SNAPSHOT_PATH = PROJECT_ROOT / "isolated/kge_evidence_v0_6/RBRC_GSC0231_CANDIDATE_SPECIFIC_EVIDENCE_SNAPSHOT_V0_1_20261023.json"
+-# FIX5: external original path, exact SHA, no sibling/untracked copy required.
+-CANDIDATE_SNAPSHOT_EXPECTED_SHA256 = "2d26283d2340001ebfa2c80f77299e6d51dcc353c072f73ec31416c484a8a0d6"
+-CANDIDATE_SNAPSHOT_DISEASE_IRI = "http://purl.obolibrary.org/obo/MONDO_0005148"
+-CANDIDATE_SNAPSHOT_RBRC_ID = "RBRC-GSC0231"
+ 
+ 
+ HML_ALLOWED = {"High", "Medium", "Low", "Not assessed"}
+@@ -507,213 +483,45 @@
+         ),
+     }
+ 
+-def _walk_json_like(x: Any, visit) -> None:
+-    if isinstance(x, dict):
+-        visit(x)
+-        for v in x.values():
+-            _walk_json_like(v, visit)
+-    elif isinstance(x, list):
+-        for v in x:
+-            _walk_json_like(v, visit)
+-    elif isinstance(x, str) and x.startswith("{"):
+-        try:
+-            _walk_json_like(json.loads(x), visit)
+-        except Exception:
+-            pass
+-
+-
+-def extract_historical_group_core(obj: dict[str, Any], rbrc_id: str) -> dict[str, Any]:
+-    """Extract only the reusable group-level core for one RBRC ID.
+-
+-    This deliberately ignores candidate-specific LLM assessments for the selected
+-    RBRC-GSC0032. A record for another Mouse only establishes membership in the
+-    historical matched-Mouse group and the group-level GCK/MGI/MedGen context.
++def historical_sparql_llm_consensus(disease_iri: str, rbrc_id: str) -> dict[str, Any]:
++    """Fail-safe scope statement; no historical output is loaded for any disease.
++
++    The only historical records supplied with v1.0.1 were from one disease.
++    We cannot honestly describe these as an equal-scope comparison for arbitrary
++    selected disease/candidate pairs, even if the pair happens to be that case.
+     """
+-    gene_rows: list[dict[str, Any]] = []
+-    mouse_rows: list[dict[str, Any]] = []
+-    mapped_diseases_variants: set[str] = set()
+-
+-    def visit(x: dict[str, Any]) -> None:
+-        mids = x.get("matched_mouse_ids")
+-        if isinstance(mids, list) and rbrc_id in mids:
+-            gene_rows.append({
+-                "gene_symbol": x.get("gene_symbol"),
+-                "human_gene_id": x.get("human_gene_id"),
+-                "gene_id_iri": x.get("gene_id_iri"),
+-                "sources": x.get("sources"),
+-                "matched_mouse_count": x.get("matched_mouse_count"),
+-            })
+-        if x.get("strain_id") == rbrc_id:
+-            mouse_rows.append({
+-                "strain_id": x.get("strain_id"),
+-                "strain_name": x.get("strain_name"),
+-                "sources": x.get("sources"),
+-                "mapped_disease": x.get("mapped_disease"),
+-            })
+-            mapped_diseases_variants.add(json.dumps(x.get("mapped_diseases"), ensure_ascii=False, sort_keys=True))
+-
+-    _walk_json_like(obj, visit)
+-
+-    def unique(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+-        out: list[dict[str, Any]] = []
+-        seen: set[str] = set()
+-        for r in rows:
+-            key = json.dumps(r, ensure_ascii=False, sort_keys=True)
+-            if key not in seen:
+-                seen.add(key)
+-                out.append(r)
+-        return out
+-
+     return {
+-        "gene_contexts": unique(gene_rows),
+-        "mouse_records": unique(mouse_rows),
+-        "mapped_diseases_schema_variants": sorted(mapped_diseases_variants),
+-    }
+-
+-
+-def historical_sparql_llm_consensus(disease_iri: str, rbrc_id: str) -> dict[str, Any]:
+-    """Read a defensively copied group summary keyed by all seven file identities.
+-
+-    Cached entries are never used if the path identity changed. Each *parse* of
+-    a cache miss consumes exactly the bytes that passed SHA verification.
+-    """
+-    if disease_iri != HISTORICAL_BOUND_DISEASE_IRI:
+-        return {
+-            "status": "OUT_OF_BOUND_SCOPE", "evidence_scope": "NONE",
+-            "candidate_specific_claim": False, "records": [],
+-            "boundary": "The pinned historical consensus set is specific to MONDO_0005148.",
+-        }
+-    signature_set = tuple((str(path), sha, _source_signature(path))
+-                          for path, sha in HISTORICAL_SPARQL_LLM_FILES)
+-    result = _historical_consensus_cached(disease_iri, rbrc_id, signature_set)
+-    if any(_source_signature(Path(path_str)) != sig
+-           for path_str, _sha, sig in signature_set):
+-        raise RuntimeError("historical SPARQL+LLM source changed before cache result return")
+-    return deepcopy(result)
+-
+-
+-@lru_cache(maxsize=64)
+-def _historical_consensus_cached(disease_iri: str, rbrc_id: str,
+-                                 signatures: tuple[tuple[str, str, tuple[int, ...]], ...]) -> dict[str, Any]:
+-    if disease_iri != HISTORICAL_BOUND_DISEASE_IRI:
+-        raise RuntimeError("historical cache received unexpected disease scope")
+-    if len(signatures) != len(HISTORICAL_SPARQL_LLM_FILES):
+-        raise RuntimeError("historical file-set count changed")
+-    for ((path_str, sha, sig), (original_path, original_sha)) in zip(signatures, HISTORICAL_SPARQL_LLM_FILES):
+-        if Path(path_str) != original_path or sha != original_sha:
+-            raise RuntimeError("historical file-set binding changed")
+-
+-    file_meta: list[dict[str, Any]] = []
+-    per_file: list[dict[str, Any]] = []
+-    for path_str, expected_sha, signature in signatures:
+-        # Identical verified bytes are decoded and parsed; NEVER reopen by
+-        # path.read_text() after a separate SHA check (R04 residual bug).
+-        meta, raw = _read_verified_source(
+-            Path(path_str), expected_sha, signature, keep_bytes=True)
+-        obj = json.loads(raw.decode("utf-8"))
+-        core = extract_historical_group_core(obj, rbrc_id)
+-        file_meta.append(meta)
+-        per_file.append(core)
+-
+-    presence = [bool(x["mouse_records"] and x["gene_contexts"]) for x in per_file]
+-    if not any(presence):
+-        return {
+-            "status": "NO_GROUP_MATCH",
+-            "evidence_scope": "NONE",
+-            "candidate_specific_claim": False,
+-            "source_files": file_meta,
+-            "records": [],
+-            "boundary": "Candidate is not present in the matched-Mouse group of the pinned historical outputs.",
+-        }
+-    if not all(presence):
+-        raise RuntimeError(f"historical SPARQL+LLM presence disagreement across pinned files: {presence}")
+-
+-    gene_keys = {
+-        json.dumps(x["gene_contexts"], ensure_ascii=False, sort_keys=True)
+-        for x in per_file
+-    }
+-    mouse_keys = {
+-        json.dumps(x["mouse_records"], ensure_ascii=False, sort_keys=True)
+-        for x in per_file
+-    }
+-    if len(gene_keys) != 1 or len(mouse_keys) != 1:
+-        raise RuntimeError("historical SPARQL+LLM core evidence disagreement across 7 pinned files")
+-
+-    gene_context = per_file[0]["gene_contexts"]
+-    mouse_record = per_file[0]["mouse_records"]
+-    if len(gene_context) != 1 or len(mouse_record) != 1:
+-        raise RuntimeError("historical SPARQL+LLM normalized core is not unique")
+-
+-    schema_variants = sorted({v for x in per_file for v in x["mapped_diseases_schema_variants"]})
++        "status": "NOT_CONNECTED_EQUAL_SCOPE_SPARQL_LLM",
++        "evidence_scope": "NO_CURRENT_COMPARISON_LOADED",
++        "candidate_specific_claim": False,
++        "selected_disease_iri": disease_iri,
++        "selected_rbrc_id": rbrc_id,
++        "records": [],
++        "boundary": (
++            "No selected-disease / selected-mouse equivalent-source SPARQL+LLM "
++            "record is loaded in v1.0.2. This is NOT a negative search result. "
++            "Historic single-disease files are excluded from this generic panel."
++        ),
++    }
++
++
++def candidate_specific_external_evidence(disease_iri: str, rbrc_id: str) -> dict[str, Any]:
++    """Do not reinterpret archived single-pair snapshots as universal evidence."""
+     return {
+-        "status": "CONSENSUS_7_OF_7",
+-        "evidence_scope": "HISTORICAL_GROUP_LEVEL_MATCH",
++        "status": "NOT_CONNECTED_CANDIDATE_SPECIFIC_SOURCES",
+         "candidate_specific_claim": False,
+-        "consensus_file_count": len(per_file),
+-        "group_gene_context": gene_context[0],
+-        "matched_mouse_record": mouse_record[0],
+-        "mapped_diseases_schema_variants": schema_variants,
+-        "source_files": file_meta,
+-        "scientific_boundary": (
+-            "This proves only that the candidate was repeatedly stored in the historical matched-Mouse group under the "
+-            "GCK/MGI/MedGen context for MONDO_0005148. It does not prove candidate-specific allele identity, phenotype "
+-            "reproduction, primary-literature support, model validity, or causal contribution to the KGE rank."
++        "selected_disease_iri": disease_iri,
++        "selected_rbrc_id": rbrc_id,
++        "boundary": (
++            "No candidate-specific external evidence is loaded in the emergency "
++            "scope-corrected release. NOT ASSESSED is not a negative biological finding."
+         ),
+     }
+ 
+ 
+-def candidate_specific_external_evidence(disease_iri: str, rbrc_id: str) -> dict[str, Any]:
+-    if disease_iri != CANDIDATE_SNAPSHOT_DISEASE_IRI or rbrc_id != CANDIDATE_SNAPSHOT_RBRC_ID:
+-        return {
+-            "status": "NOT_ASSESSED_FOR_THIS_CANDIDATE_V0_6",
+-            "candidate_specific_claim": False,
+-            "boundary": "V0.6 binds candidate-specific external evidence only for MONDO_0005148 x RBRC-GSC0231.",
+-        }
+-    # FIX5: verify exactly the bytes consumed; a cached prior SHA is not accepted.
+-    # The original snapshot remains read-only and outside the candidate checkout.
+-    snapshot_bytes = CANDIDATE_SNAPSHOT_PATH.read_bytes()
+-    observed_sha256 = hashlib.sha256(snapshot_bytes).hexdigest()
+-    if observed_sha256 != CANDIDATE_SNAPSHOT_EXPECTED_SHA256:
+-        raise RuntimeError(
+-            "candidate-specific snapshot SHA256 mismatch: "
+-            f"{CANDIDATE_SNAPSHOT_PATH} observed={observed_sha256} "
+-            f"expected={CANDIDATE_SNAPSHOT_EXPECTED_SHA256}"
+-        )
+-    meta = {
+-        "path": str(CANDIDATE_SNAPSHOT_PATH),
+-        "sha256": observed_sha256,
+-        "size_bytes": len(snapshot_bytes),
+-    }
+-    obj = json.loads(snapshot_bytes)
+-    if obj.get("disease_scope") != disease_iri:
+-        raise RuntimeError("candidate-specific snapshot disease identity mismatch")
+-    cand = obj.get("candidate", {})
+-    if cand.get("rbrc_id") != rbrc_id:
+-        raise RuntimeError("candidate-specific snapshot RBRC identity mismatch")
+-    if obj.get("scientific_boundary", {}).get("candidate_specific_primary_experimental_paper") != "NOT_IDENTIFIED_AFTER_PROJECT_CHAT_AND_EXTERNAL_SOURCE_REVIEW":
+-        raise RuntimeError("unexpected primary-literature status in V0.6 snapshot")
++def derive_provisional_assessment(candidate_external: dict[str, Any]) -> dict[str, Any]:
++    """Conservative generic default; no single-case phenotype / F3/HML rule."""
+     return {
+-        "status": "CANDIDATE_SPECIFIC_EXTERNAL_SNAPSHOT_BOUND",
+-        "candidate_specific_claim": True,
+-        "snapshot_meta": meta,
+-        "catalog": obj.get("catalog", {}),
+-        "mgi_allele": obj.get("mgi_allele", {}),
+-        "mgi_phenotype": obj.get("mgi_phenotype", {}),
+-        "references": obj.get("references", []),
+-        "scientific_boundary": obj.get("scientific_boundary", {}),
+-        "snapshot_status": obj.get("snapshot_status"),
+-        "observed_on": obj.get("observed_on"),
+-    }
+-
+-
+-
+-def derive_provisional_assessment(candidate_external: dict[str, Any]) -> dict[str, Any]:
+-    """Derive a bounded, deterministic proposal from candidate-specific evidence only.
+-
+-    This is not an expert review and not an LLM result. KGE rank, GO overlap,
+-    historical group membership, and citation count are deliberately excluded.
+-    """
+-    out = {
+         "ruleset_id": PROVISIONAL_ASSESSMENT_RULESET_ID,
+         "status": "NOT_ASSESSED",
+         "generated_by": "DETERMINISTIC_EVIDENCE_RULESET_NOT_LLM",
+@@ -726,70 +534,11 @@
+         "kge_rank_causality": "NOT_ESTABLISHED",
+         "evidence_basis": [],
+         "exclusions": [
+-            "KGE rank is not used to assign F1-F4 or H/M/L.",
+-            "GO overlap, GO frequency/IDF, and citation count are not used to assign F1-F4 or H/M/L.",
+-            "Historical SPARQL+LLM group membership is not treated as candidate-specific phenotype or publication evidence.",
++            "KGE ranks and GO overlaps are not sufficient for disease-model assessment.",
++            "Case-specific external evidence is NOT CONNECTED for this release.",
++            "Official F/HML remains Not assessed until independent scientific review.",
+         ],
+     }
+-    if candidate_external.get("status") != "CANDIDATE_SPECIFIC_EXTERNAL_SNAPSHOT_BOUND":
+-        return out
+-
+-    boundary = candidate_external.get("scientific_boundary") or {}
+-    allele = candidate_external.get("mgi_allele") or {}
+-    phenotype = candidate_external.get("mgi_phenotype") or {}
+-
+-    checks = {
+-        "candidate_specific_allele_identity": boundary.get("candidate_specific_allele_identity") == "SUPPORTED",
+-        "candidate_specific_hyperglycemia": boundary.get("candidate_specific_hyperglycemia") == "SUPPORTED_BY_MGI_PHENOTYPE_ANNOTATION",
+-        "phenotype_exact": phenotype.get("phenotype") == "hyperglycemia",
+-        "blood_glucose_observed": phenotype.get("blood_glucose_11_weeks_mg_dl") == 254,
+-        "primary_experimental_paper_absent": boundary.get("candidate_specific_primary_experimental_paper") == "NOT_IDENTIFIED_AFTER_PROJECT_CHAT_AND_EXTERNAL_SOURCE_REVIEW",
+-        "t2d_validity_not_established": boundary.get("t2d_model_validity") == "NOT_ESTABLISHED_BY_THESE_SOURCES_ALONE",
+-        "rank_causality_not_established": boundary.get("kge_rank_causality") == "NOT_ESTABLISHED",
+-    }
+-    if not all(checks.values()):
+-        out["evidence_checks"] = checks
+-        return out
+-
+-    out.update({
+-        "status": "PROVISIONAL_RULE_BASED_NOT_EXPERT_REVIEWED",
+-        "proposed_f_class": "F3",
+-        "proposed_hml": "Medium",
+-        "stock_phenotype": "CANDIDATE_SPECIFIC_HYPERGLYCEMIA_SUPPORTED_NOT_T2D_REPRODUCTION",
+-        "disease_model_validity": "NOT_ESTABLISHED",
+-        "source_independence": "NOT_ESTABLISHED",
+-        "kge_rank_causality": "NOT_ESTABLISHED",
+-        "evidence_checks": checks,
+-        "evidence_basis": [
+-            {
+-                "claim": "candidate-specific allele identity",
+-                "status": "SUPPORTED",
+-                "identifier": allele.get("mgi_allele_id"),
+-                "allele": allele.get("allele_symbol"),
+-                "mutation": allele.get("mutation_description"),
+-            },
+-            {
+-                "claim": "candidate-specific hyperglycemia observation",
+-                "status": "SUPPORTED_BY_MGI_PHENOTYPE_ANNOTATION",
+-                "phenotype": phenotype.get("phenotype"),
+-                "blood_glucose_11_weeks_mg_dl": phenotype.get("blood_glucose_11_weeks_mg_dl"),
+-                "reference": phenotype.get("phenotype_reference"),
+-            },
+-            {
+-                "claim": "candidate-specific peer-reviewed primary experimental paper",
+-                "status": "NOT_IDENTIFIED",
+-            },
+-            {
+-                "claim": "T2D model validity",
+-                "status": "NOT_ESTABLISHED_BY_THESE_SOURCES_ALONE",
+-            },
+-        ],
+-        "rationale": [
+-            "F3 is proposed because candidate-specific phenotype observation/resource evidence exists, while a candidate-specific peer-reviewed primary experimental paper was not identified.",
+-            "Medium is proposed because the exact candidate allele has a disease-direction-consistent hyperglycemia annotation, but full T2D model validity and candidate-specific primary experimental literature remain unestablished.",
+-        ],
+-    })
+-    return out
+ 
+ 
+ def validate_provisional_assessment(provisional: dict[str, Any]) -> None:
+@@ -868,7 +617,7 @@
+             "Not assessed is distinct from Low.",
+             "KGE rank, GO exact match, GO frequency/IDF, literature count, and historical group membership do not assign H/M/L or F1-F4.",
+             "Stock phenotype reproduction is a separate variable from mechanistic H/M/L.",
+-            "The V0.6 F3/Medium proposal is provisional, deterministic, not LLM-generated, and not expert-reviewed.",
++            "No positive provisional F/HML is proposed without verified candidate-specific evidence.",
+         ],
+     }
+     validate_assessment(assessment)
+@@ -927,16 +676,16 @@
+             "status": candidate_external.get("status"),
+             "records": candidate_external.get("references", []),
+             "primary_experimental_paper_status": (candidate_external.get("scientific_boundary") or {}).get("candidate_specific_primary_experimental_paper", "NOT_ASSESSED"),
+-            "boundary": "Aigner 2008 is treated as a review article; J:133634 is a web resource. Neither is promoted to a candidate-specific primary experimental paper.",
++            "boundary": "Candidate-specific literature sources are NOT CONNECTED in v1.0.2; no negative or positive paper claim is made.",
+         },
+         "assessment": assessment,
+         "unproven_scope": [
+             "Structural paths do not prove that KGE used that path causally to assign the saved rank.",
+             "GO association does not by itself establish disease mechanism or model validity.",
+             "No claim is made that the distributed RBRC stock reproduces the target disease phenotype.",
+-            "Historical SPARQL+LLM group membership is not candidate-specific strain/allele/catalog/publication evidence.",
+-            "Candidate-specific strain/allele/catalog/phenotype evidence is bound only for the explicitly pinned RBRC-GSC0231 snapshot; other candidates remain unassessed.",
+-            "No candidate-specific peer-reviewed primary experimental paper was identified after project-chat review and external-source review for RBRC-GSC0231.",
++            "Current-disease current-mouse SPARQL+LLM comparison is NOT CONNECTED; no negative search finding is claimed.",
++            "Case-specific strain/allele/catalog/phenotype external sources are NOT CONNECTED for any candidate in v1.0.2; all remain unassessed.",
++            "No candidate-specific primary-paper lookup is performed; NOT ASSESSED does not mean absent.",
+             "Disease-gene-linked GO overlap is post-hoc structural context, not a direct Disease->GO assertion or a causal explanation of rank.",
+         ],
+         "provenance": {
+
+--- v1.0.1/streamlit_app_FIX8.py
++++ v1.0.2/streamlit_app_8504_v1_0_2.py
+@@ -1,12 +1,13 @@
+ #!/usr/bin/env python3
+ # -*- coding: utf-8 -*-
+-"""Isolated 8504 evidence-interpretation wrapper candidate.
++"""8504 v1.0.2 Mac-local emergency scope-correction wrapper.
+ 
+ This wrapper does NOT copy or modify the official FX9B FIX1 source. It verifies
+ its exact SHA256 at runtime, imports it read-only, renders the existing audit UI,
+ then appends a candidate Evidence Bundle panel.
+ 
+-No release/promotion is implied by this file.
++Candidate-level historic and external resources are NOT CONNECTED.
++Fixes misleading fixed-single-case presentation without asserting generic integration.
+ """
+ from __future__ import annotations
+ 
+@@ -23,7 +24,7 @@
+ 
+ import streamlit as st
+ 
+-from kge_evidence_bundle_readonly_v0_6 import build_evidence_bundle, llm_input_payload
++from kge_evidence_bundle_readonly_v1_0_2 import build_evidence_bundle, llm_input_payload
+ from kge_verified_ranking_contract_v0_1 import verify_official_loaded_row_trusted
+ from kge_provisional_llm_output_gate_v0_1 import validate_provisional_llm_response
+ 
+@@ -33,17 +34,17 @@
+     / "streamlit_app__FX9B_GFINAL_AUDIT_CANDIDATE_V0_1_FIX1_20261009.py"
+ )
+ BASE_8504_SHA256 = "4de02002017698a3453b0567ddd44ea629945888fba3e57f05043e48aabd47ca"
+-WRAPPER_STATUS = "ISOLATED_FIX8_PREACCEPT / NOT_RELEASED / OFFICIAL_8504_UNCHANGED"
++WRAPPER_STATUS = "V1_0_2_MAC_LOCAL_EMERGENCY_SCOPE_CORRECTION / SCIENTIFIC_ASSESSMENT_NOT_ACCEPTED"
+ 
+ LOCAL_DIR = Path(__file__).resolve().parent
+-LLM_PROMPT_PATH = LOCAL_DIR / "LLM_PROVISIONAL_PROMPT_V0_1_20261023.txt"
++LLM_PROMPT_PATH = LOCAL_DIR / "LLM_PROVISIONAL_PROMPT_V1_0_2_20261028.txt"
+ LLM_OUTPUT_SCHEMA_PATH = LOCAL_DIR / "LLM_PROVISIONAL_OUTPUT_SCHEMA_V0_1_20261023.json"
+ LLM_HANDOFF_PATH = LOCAL_DIR / "HANDOFF_TO_SPARQL_LLM_FOR_LLM_BROKER_20261023.md"
+ 
+ # Review-only proposal: enforce byte-identity before labeling LLM prep as PASS.
+ # The three expected digests are from the frozen FIX8 distribution archive.
+ PINNED_LLM_PREP_ASSET_SHA256 = {
+-    "prompt": "b9484156ca56578cb942ae38ea3c03b68284da8b01d7ea2c291d508afe5981f8",
++    "prompt": 'e62fe1f1a5bbfee56f4cc791c408958eaf7a874bad182373239d3acbfae08284',
+     "output schema": "a1f88e3036463a356b8101008fedb900adbc108aa247bb5544cd5a7070449c90",
+     "handoff": "25bd0cef11eaa031baaabbd9b7ac7cec8c0c9a2b215f1ee29ae04fe98d8cd069",
+ }
+@@ -90,27 +91,44 @@
+     return pd.DataFrame(records)
+ 
+ 
++def top50_csv_from_verified_frame(loaded, family: str) -> bytes:
++    # Caller must first validate the selected 5,892-row frame with the verified
++    # ranking authority. This helper is bounded to exactly ranks 1..50.
++    frame = loaded["frames"][family]
++    numeric = pd.to_numeric(frame["final_rank"], errors="raise")
++    top = frame.assign(__rank_sort=numeric).sort_values("__rank_sort", kind="mergesort").head(50)
++    if len(top) != 50 or list(top["__rank_sort"].astype(int)) != list(range(1, 51)):
++        raise RuntimeError("TOP50_CONTRACT_FAILED")
++    return top.drop(columns=["__rank_sort"]).to_csv(index=False).encode("utf-8-sig")
++
++
+ def render_evidence_panel(base) -> None:
+     active = str(st.session_state.get("fx9b_active_audit_query", "")).strip()
+     if not active:
+         return
+ 
+     st.divider()
+-    st.header("候補Mouse 生物学的根拠（隔離candidate）")
++    st.header("候補マウスの生物学的根拠を確認（参考情報）")
+     st.caption(
+-        "既存8504の凍結順位を変更せず、選択候補にread-only Evidence Bundleを重ねます。"
+-        "V0.6ではFrozen Train・固定GO evidence source・7版一致した既存SPARQL+LLM group-level evidenceに加え、"
+-        "MONDO_0005148 x RBRC-GSC0231に限り、固定candidate-specific external snapshotをread-only表示し、正式評価を変更せず決定論的provisional assessmentを併記します。"
++        "この画面では、KGEが提示した候補マウスについて、保存済みの遺伝子・表現型・GO情報を確認できます。"
++        "候補マウスの順位は変更しません。GOは遺伝子・表現型を補う参考情報です。"
++        "SPARQL+LLMでの同条件の検索結果照合と、候補固有の外部系統・文献情報の取得は未実装です。"
++        "正式な科学的評価やKGE順位形成の原因の証明は行いません。"
+     )
+-    st.code(
+-        "EVIDENCE_CANDIDATE=YES\n"
+-        "OFFICIAL_8504_MUTATION=NO\n"
+-        "GFINAL_RANK_MUTATION=NO\n"
+-        "PRIMARY_TEST/TEST/WITHHELD=NO\n"
+-        "NETWORK_RETRIEVAL=NO\n"
+-        "LLM_CALL=NO",
+-        language="text",
++    st.warning(
++        "【v1.0.2 緊急修正】前版でT2Dの過去資料と単一候補の外部資料を固定読込していた部分を、"
++        "汎用的な検索結果と誤認させないため無効化しました。すべての疾患で同じ表示範囲を適用します。"
++        "未接続は『検索結果なし』『科学的根拠なし』という意味ではありません。"
+     )
++    with st.expander("データ・動作範囲の詳細（運用情報）", expanded=False):
++        st.code(
++            "EVIDENCE_CANDIDATE=YES\n"
++            "OFFICIAL_8504_MUTATION=NO\n"
++            "GFINAL_RANK_MUTATION=NO\n"
++            "PRIMARY_TEST/TEST/WITHHELD=NO\n"
++            "NETWORK_RETRIEVAL=NO\n"
++            "LLM_CALL=NO", language="text",
++        )
+ 
+     helper = base.verified_helper()
+     disease_id = helper.normalize_mondo_id(active)
+@@ -151,36 +169,19 @@
+         st.stop()
+ 
+     st.success(
+-        f"EVIDENCE_BUNDLE_READONLY=PASS / {family} rank={rank} / {bundle['identity']['rbrc_id']}"
++        f"固定根拠データの読取り検証=PASS / {family} / 順位{rank} / {bundle['identity']['rbrc_id']}"
+     )
+-    # V0.7.2 (isolated): verified Evidence-success scientific follow-up.
+-    # The v0.6 Evidence identity and frozen rank must all match the fixed case.
+-    _kge072_identity = bundle.get("identity", {}) if isinstance(bundle, dict) else {}
+-    _kge072_allowed = (
+-        str(_kge072_identity.get("disease_iri", "")) == "http://purl.obolibrary.org/obo/MONDO_0005148"
+-        and str(_kge072_identity.get("mouse_iri", "")) == "http://metadb.riken.jp/db/rikenbrc_mouse/RBRC-GSC0231"
+-        and str(_kge072_identity.get("rbrc_id", "")) == "RBRC-GSC0231"
+-        and str(family) == "node2vec"
+-        and str(rank) == "1"
+-        and bundle.get("ranking", {}).get("frozen_flag") is True
++    st.caption("これは入力の技術的な検証結果です。生物学的妥当性、順位形成の原因、SPARQL検索での検出を保証しません。")
++    # Only the verified 5,892-row frame is used; the download is explicitly Top50.
++    csv_bytes = top50_csv_from_verified_frame(loaded, family)
++    st.download_button(
++        "選択手法の上位50候補をCSV保存",
++        csv_bytes,
++        file_name=f"KGE_8504_{disease_id}_{family}_TOP50.csv",
++        mime="text/csv", key="kge_8504_v102_top50_csv", on_click="ignore",
+     )
+-    if _kge072_allowed:
+-        st.divider()
+-        # HEADERFIX1: the already-invoked V0.7 follow-up helper renders the
+-        # science-question heading. A second st.subheader() here previously
+-        # produced the duplicate V0.7 / V0.7.2 headings in the Mac browser.
+-        # Keep a non-heading V0.7.2 status label until the helper source is
+-        # independently inspected and its own heading can be corrected.
+-        st.caption("隔離V0.7.2 FIX8（検証用）：固定症例の読取専用Evidenceに基づく検証課題です。凍結順位への寄与は未実証であり、モデルの採否は研究者が判断します。")
+-        from kge_candidate_research_next_steps_v0_7_2_labelonlyfix1 import render_followup_panel_from_verified_input as _kge072_render
+-        _kge072_render(
+-            expected_disease_iri="http://purl.obolibrary.org/obo/MONDO_0005148",
+-            expected_mouse_iri="http://metadb.riken.jp/db/rikenbrc_mouse/RBRC-GSC0231",
+-            expected_family="node2vec",
+-            expected_rank=1,
+-        )
+-    else:
+-        st.caption("追加検証課題はMONDO_0005148 × node2vec第1位RBRC-GSC0231の確認済み固定症例のみに対応します。")
++    st.caption("このCSVは画面表示用の上位50候補のみです。5,892件全順位の原本TSVではありません。")
++    st.info("『次の科学的検証課題の自動提案』は汎用機能として未実装です。単一固定症例専用の前版パネルは起動しません。")
+ 
+     tabs = st.tabs([
+         "要約", "元トリプル", "構造経路", "GO:疾患関連共有", "GO:Mouse全注釈",
+@@ -192,22 +193,8 @@
+         c1, c2, c3, c4 = st.columns(4)
+         c1.metric("疾患関連Gene数", int(gc["disease_gene_count"]))
+         c2.metric("Mouse GO term数", int(gc["candidate_go_count"]))
+-        c3.metric("疾患Gene-linked GO数", int(gc["disease_gene_linked_go_count"]))
++        c3.metric("疾患関連遺伝子に基づくGO種類数", int(gc["disease_gene_linked_go_count"]))
+         c4.metric("共有GO数", int(gc["shared_go_count"]))
+-        if (
+-            str(bundle["identity"].get("rbrc_id", "")) != "RBRC-GSC0231"
+-            and any(
+-                "RBRC-GSC0231" in str(note)
+-                for note in bundle["unproven_scope"]
+-            )
+-        ):
+-            st.info(
+-                "表示上の注意：以下のunproven_scopeに出てくるRBRC-GSC0231は、"
+-                "別途確認した固定症例の証拠適用範囲を説明しています。"
+-                "現在選択中のMouseにGckアレルや高血糖の根拠を割り当てた意味ではありません。"
+-                "この候補自身の根拠は『系統・アレル』タブのcandidate_specific_claimと"
+-                "allele_identity／phenotypeで確認してください。未評価は陰性の証明ではありません。"
+-            )
+         st.json({
+             "identity": bundle["identity"],
+             "ranking": bundle["ranking"],
+@@ -263,19 +250,22 @@
+ 
+     with tabs[5]:
+         hist = bundle["historical_sparql_llm_evidence"]
+-        if hist.get("status") == "CONSENSUS_7_OF_7":
+-            st.success("HISTORICAL_SPARQL_LLM_CONSENSUS=PASS_7_OF_7")
+-        elif hist.get("status") == "NO_GROUP_MATCH":
+-            st.info("この候補は固定7版のmatched-Mouse groupには含まれていません。")
+-        else:
+-            st.info("固定historical Evidenceの対象scope外です。")
++        if hist.get("status") != "NOT_CONNECTED_EQUAL_SCOPE_SPARQL_LLM":
++            st.error("SPARQL+LLM接続状態の契約違反です。照合結果は表示しません。")
++            st.stop()
++        st.info(
++            "【未実装・未接続】この疾患・この候補マウスに対応する既存SPARQL+LLMの"
++            "検索結果との同条件照合は、現行v1.0.2では行っていません。"
++            "情報がない／検索で見つからないという判断ではありません。"
++        )
+         st.json(hist)
+-        st.warning("これはhistorical group-level evidenceです。候補固有のアレル・表現型実証・原著・KGE順位理由を証明しません。")
+ 
+     with tabs[6]:
++        st.info("【未接続・未評価】候補固有の外部系統・アレル情報は現在読み込んでいません。未評価は陰性ではありません。")
+         st.json(bundle["strain_and_allele"])
+ 
+     with tabs[7]:
++        st.info("【未接続・未評価】この候補に固有の原著文献照合は行っていません。論文が存在しないとの判定ではありません。")
+         st.json(bundle["external_papers"])
+ 
+     with tabs[8]:
+@@ -299,7 +289,7 @@
+             p1.metric("暫定 F1–F4 提案", str(provisional.get("proposed_f_class")))
+             p2.metric("暫定 H/M/L 提案", str(provisional.get("proposed_hml")))
+         else:
+-            st.info("この候補にはV0.6暫定評価ルールを適用できるcandidate-specific Evidenceがありません。")
++            st.info("候補固有の外部根拠は未接続のため、暫定F/HMLは提案しません。正式評価も未評価です。")
+ 
+         st.json({
+             "formal_assessment_boundary": formal,
+@@ -316,7 +306,7 @@
+ 
+     with tabs[10]:
+         st.warning(
+-            "V0.6ではLLM APIを呼びません。ここでは固定Evidence入力・固定prompt・期待JSON schemaを生成するだけです。"
++            "LLMの実API呼出しは未実装です。ここではEvidence入力・固定prompt・期待JSON schemaを保存できるだけです。"
+             "API keyの読取・保存・復号は行いません。評価タブのF3/Mediumは決定論的暫定提案であり、LLM出力・専門家評価ではありません。"
+         )
+         try:
+@@ -405,7 +395,7 @@
+         with c2:
+             st.download_button(
+                 "固定prompt", prompt_bytes,
+-                file_name="LLM_PROVISIONAL_PROMPT_V0_1_20261023.txt",
++                file_name="LLM_PROVISIONAL_PROMPT_V1_0_2_20261028.txt",
+                 mime="text/plain", key="evidence_llm_prompt_download", on_click="ignore",
+             )
+         with c3:
+@@ -433,6 +423,11 @@
+     # Render official FX9B FIX1 behavior first. The official source is imported only
+     # after exact SHA verification and is never written by this wrapper.
+     base.render()
++    st.sidebar.info("""8504 v1.0.2｜Mac限定緊急修正版
++
++SPARQL+LLM汎用照合・候補固有外部情報：未接続
++
++科学的機能受入：再審査中""")
+     render_evidence_panel(base)
+ 
+ 

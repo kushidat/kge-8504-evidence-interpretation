@@ -1,0 +1,73 @@
+--- v102_preview/app/streamlit_app_8504_v1_0_2_emergency_scope_correction.py
++++ v102_rc2/app/streamlit_app_8504_v1_0_2_emergency_scope_correction.py
+@@ -10,6 +10,10 @@
+ Fixes misleading fixed-single-case presentation without asserting generic integration.
+ """
+ from __future__ import annotations
++
++from datetime import datetime
++from zoneinfo import ZoneInfo
++import re
+ 
+ # V0.7.1 isolated table sort: all absent ranks stay at bottom.
+ from kge_rank_nullsort_v0_7_1 import install_rank_comparison_renderer as _kge_install_nullsort_071
+@@ -34,7 +38,7 @@
+     / "streamlit_app__FX9B_GFINAL_AUDIT_CANDIDATE_V0_1_FIX1_20261009.py"
+ )
+ BASE_8504_SHA256 = "4de02002017698a3453b0567ddd44ea629945888fba3e57f05043e48aabd47ca"
+-WRAPPER_STATUS = "V1_0_2_MAC_LOCAL_EMERGENCY_SCOPE_CORRECTION / SCIENTIFIC_ASSESSMENT_NOT_ACCEPTED"
++WRAPPER_STATUS = "V1_0_2_RC2_MAC_LOCAL_EMERGENCY_SCOPE_CORRECTION / SCIENTIFIC_ASSESSMENT_NOT_ACCEPTED"
+ 
+ LOCAL_DIR = Path(__file__).resolve().parent
+ LLM_PROMPT_PATH = LOCAL_DIR / "LLM_PROVISIONAL_PROMPT_V1_0_2_20261028.txt"
+@@ -100,6 +104,19 @@
+     if len(top) != 50 or list(top["__rank_sort"].astype(int)) != list(range(1, 51)):
+         raise RuntimeError("TOP50_CONTRACT_FAILED")
+     return top.drop(columns=["__rank_sort"]).to_csv(index=False).encode("utf-8-sig")
++
++
++def top50_export_filename(disease_id: str, family: str, when: datetime | None = None) -> str:
++    """Export timestamp: button-render time in Asia/Tokyo, not click time."""
++    if not re.fullmatch(r"MONDO_[0-9]+", disease_id):
++        raise ValueError("INVALID_DISEASE_ID_FOR_CSV_NAME")
++    if not re.fullmatch(r"[A-Za-z0-9_]+", family):
++        raise ValueError("INVALID_FAMILY_FOR_CSV_NAME")
++    instant = when if when is not None else datetime.now(ZoneInfo("Asia/Tokyo"))
++    if instant.tzinfo is None or instant.utcoffset() is None:
++        raise ValueError("EXPORT_TIMESTAMP_MUST_BE_TIMEZONE_AWARE")
++    suffix = instant.astimezone(ZoneInfo("Asia/Tokyo")).strftime("%Y%m%d_%H%M%S_JST")
++    return f"KGE_8504_{disease_id}_{family}_TOP50_{suffix}.csv"
+ 
+ 
+ def render_evidence_panel(base) -> None:
+@@ -177,10 +194,11 @@
+     st.download_button(
+         "選択手法の上位50候補をCSV保存",
+         csv_bytes,
+-        file_name=f"KGE_8504_{disease_id}_{family}_TOP50.csv",
++        file_name=top50_export_filename(disease_id, family),
+         mime="text/csv", key="kge_8504_v102_top50_csv", on_click="ignore",
+     )
+     st.caption("このCSVは画面表示用の上位50候補のみです。5,892件全順位の原本TSVではありません。")
++    st.caption('CSV名の時刻は日本時間(JST)のボタン表示時刻です。クリック時刻とは限りません。')
+     st.info("『次の科学的検証課題の自動提案』は汎用機能として未実装です。単一固定症例専用の前版パネルは起動しません。")
+ 
+     tabs = st.tabs([
+@@ -307,7 +325,7 @@
+     with tabs[10]:
+         st.warning(
+             "LLMの実API呼出しは未実装です。ここではEvidence入力・固定prompt・期待JSON schemaを保存できるだけです。"
+-            "API keyの読取・保存・復号は行いません。評価タブのF3/Mediumは決定論的暫定提案であり、LLM出力・専門家評価ではありません。"
++            'API keyの読取・保存・復号は行いません。候補固有の外部根拠は未接続のため、暫定F/HMLは提案しません。正式評価も未評価です。'
+         )
+         try:
+             prompt_bytes = _pinned_llm_prep_bytes(LLM_PROMPT_PATH, "prompt")
+@@ -423,7 +441,7 @@
+     # Render official FX9B FIX1 behavior first. The official source is imported only
+     # after exact SHA verification and is never written by this wrapper.
+     base.render()
+-    st.sidebar.info("""8504 v1.0.2｜Mac限定緊急修正版
++    st.sidebar.info("""8504 v1.0.2 RC2｜Mac限定緊急修正版
+ 
+ SPARQL+LLM汎用照合・候補固有外部情報：未接続
+ 

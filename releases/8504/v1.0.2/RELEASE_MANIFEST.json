@@ -1,0 +1,72 @@
+{
+  "version": "8504-v1.0.2-rc2-mac-local-emergency-scope-correction",
+  "date_jst": "2026-10-28",
+  "scope": "Mac localhost only",
+  "predecessor_release": "v1.0.1",
+  "predecessor_release_sha256": "7394536893b92e4fe73a024d744303885d6fdbd4bfa1eb259bdff817b20117f2",
+  "official_base_sha256": "4de02002017698a3453b0567ddd44ea629945888fba3e57f05043e48aabd47ca",
+  "source_snapshot_note": "New sources are a scope-corrected derivative of the pinned v1.0.1 FIX8 distribution; original unchanged.",
+  "original_sources_changed": false,
+  "original_git_main_changed": false,
+  "PRIMARY_TEST_access": false,
+  "TEST_access": false,
+  "WITHHELD_access": false,
+  "github_release_published": false,
+  "mac_runtime_verified": false,
+  "new_synthetic_tests": "11/11 PASS on changed RC2 code; mock-based non-scientific QA",
+  "historical_single_disease_json": "NOT_LOADED_ALL_DISEASES",
+  "single_candidate_snapshot": "NOT_LOADED_ALL_CANDIDATES",
+  "equal_scope_sparql_llm": "NOT_CONNECTED",
+  "candidate_specific_external": "NOT_CONNECTED",
+  "f_hml": "NOT_ASSESSED",
+  "reg04_issues_accepted": "0/11",
+  "scientific_result": "NONE_CLAIMED",
+  "source_files": [
+    {
+      "name": "HANDOFF_TO_SPARQL_LLM_FOR_LLM_BROKER_20261023.md",
+      "size_bytes": 3270,
+      "sha256": "25bd0cef11eaa031baaabbd9b7ac7cec8c0c9a2b215f1ee29ae04fe98d8cd069"
+    },
+    {
+      "name": "LLM_PROVISIONAL_OUTPUT_SCHEMA_V0_1_20261023.json",
+      "size_bytes": 3353,
+      "sha256": "a1f88e3036463a356b8101008fedb900adbc108aa247bb5544cd5a7070449c90"
+    },
+    {
+      "name": "LLM_PROVISIONAL_PROMPT_V1_0_2_20261028.txt",
+      "size_bytes": 1558,
+      "sha256": "e62fe1f1a5bbfee56f4cc791c408958eaf7a874bad182373239d3acbfae08284"
+    },
+    {
+      "name": "kge_evidence_bundle_readonly_v1_0_2.py",
+      "size_bytes": 34267,
+      "sha256": "2a02db3ede773ae941bd9e03b2b2a217ad96c7192527ba7a7712c3a5779a5ea2"
+    },
+    {
+      "name": "kge_provisional_llm_output_gate_v0_1.py",
+      "size_bytes": 14888,
+      "sha256": "49f3dc96d21f3ab7855b59e54645f87427e7946b9352bb86df8cd4c4c3b12fd4"
+    },
+    {
+      "name": "kge_rank_nullsort_v0_7_1.py",
+      "size_bytes": 9420,
+      "sha256": "228189620be9bdb909669b392b3c53ff24051fbb516c8d0f165ace2cb518c992"
+    },
+    {
+      "name": "kge_verified_ranking_contract_v0_1.py",
+      "size_bytes": 14216,
+      "sha256": "a245acf5c5259a4e78ad6ce0bc650410b57d03ad6a7563862e08e9e66bde1f08"
+    },
+    {
+      "name": "streamlit_app_8504_v1_0_2_emergency_scope_correction.py",
+      "size_bytes": 22090,
+      "sha256": "67ed1667484fb5b324f33e9bfe32d949a84034d9c9e3d61602dcd2a104fea4df"
+    }
+  ],
+  "build_revision": "RC2; supersedes prior v1.0.2 preview build for release candidacy only",
+  "prior_v102_zip_sha256": "e186b6d3a75cd0fe29ed93dd8974000080ec2c1bae93080810375c24270b9d61",
+  "prior_v102_preview": "USER_REPORTED_PASS_20261028_FOR_ALS_T2D_MELANOMA_GO_TOP50",
+  "new_csv_filename_suffix": "YYYYMMDD_HHMMSS_JST",
+  "csv_timestamp_semantics": "Asia/Tokyo render-time; may differ from click time",
+  "deprecated_f3_medium_caption": "REMOVED"
+}

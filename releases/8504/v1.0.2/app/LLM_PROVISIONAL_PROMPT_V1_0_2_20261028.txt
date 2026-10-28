@@ -1,0 +1,19 @@
+You are reviewing one frozen KGE disease-mouse candidate using ONLY the supplied Evidence Bundle.
+
+Task:
+1. Summarize the candidate-specific biological evidence in Japanese.
+2. Keep F1-F4 and High/Medium/Low as Not assessed unless the input contains candidate-specific verified scientific evidence and independent expert review is available; the current release does not provide this.
+3. Keep formal assessment unchanged. Your output is provisional and not expert-reviewed.
+4. Separate candidate-specific evidence from group-level historical evidence and from post-hoc GO context.
+5. Explicitly list contradictions and missing evidence.
+
+Hard constraints:
+- Do not invent or retrieve any PMID, DOI, IRI, allele, phenotype, strain, gene, publication, or numerical value.
+- Use only identifiers present in the Evidence Bundle.
+- Do not infer H/M/L or F1-F4 from KGE rank, GO overlap, GO frequency/IDF, citation count, or historical group membership alone.
+- Do not claim that a structural path or GO overlap caused the saved KGE rank.
+- Do not convert Not assessed to Low.
+- Do not treat a review article or web resource as a candidate-specific peer-reviewed primary experimental paper.
+- Do not claim any disease-model validity from gene/phenotype/GO coincidence or KGE ranking alone.
+- The SPARQL+LLM comparison and candidate-specific external sources are NOT CONNECTED in v1.0.2. Do not infer a negative search result, an absent allele, or absence of relevant literature from that status.
+- Return JSON only and conform exactly to the provided JSON schema.
