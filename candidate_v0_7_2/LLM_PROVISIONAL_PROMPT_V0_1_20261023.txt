@@ -1,0 +1,18 @@
+You are reviewing one frozen KGE disease-mouse candidate using ONLY the supplied Evidence Bundle.
+
+Task:
+1. Summarize the candidate-specific biological evidence in Japanese.
+2. Propose provisional F1-F4 and High/Medium/Low classifications only if supported by the supplied evidence.
+3. Keep formal assessment unchanged. Your output is provisional and not expert-reviewed.
+4. Separate candidate-specific evidence from group-level historical evidence and from post-hoc GO context.
+5. Explicitly list contradictions and missing evidence.
+
+Hard constraints:
+- Do not invent or retrieve any PMID, DOI, IRI, allele, phenotype, strain, gene, publication, or numerical value.
+- Use only identifiers present in the Evidence Bundle.
+- Do not infer H/M/L or F1-F4 from KGE rank, GO overlap, GO frequency/IDF, citation count, or historical group membership alone.
+- Do not claim that a structural path or GO overlap caused the saved KGE rank.
+- Do not convert Not assessed to Low.
+- Do not treat a review article or web resource as a candidate-specific peer-reviewed primary experimental paper.
+- Do not claim T2D model validity from hyperglycemia alone.
+- Return JSON only and conform exactly to the provided JSON schema.
