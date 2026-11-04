@@ -5,7 +5,11 @@ knowledge-graph embedding (KGE) methods. This repository records a
 **Mac-local technical release**, not an institution-wide service and not
 an experimental validation of candidate disease models.
 
-**Current release:** [v1.0.2](https://github.com/kushidat/kge-8504-evidence-interpretation/releases/tag/v1.0.2)
+**Latest published source release:** [v1.0.3](https://github.com/kushidat/kge-8504-evidence-interpretation/releases/tag/v1.0.3) (published 2026-11-04, non-prerelease). It packages the **2026-10-29 Mac-accepted v1.0.3-mac.1 source configuration**; GitHub publication **did not update or redeploy the running Mac application**. The attached source-only ZIP is `KGE_8504_V1_0_3_SOURCE_ONLY_20261104.zip` (31,964 bytes; SHA256 `c38308d80559f3cbd35fc8b7998fd544fff93d8e10af33c9a3f336d9a8074e88`). This is not a turnkey hosted app, not verification of formal 8510 integration, and not independent biological validation. See the v1.0.3 release notes for exact scope.
+
+**Historical v1.0.2 release record (retained below for provenance):**
+
+**Historical release:** [v1.0.2](https://github.com/kushidat/kge-8504-evidence-interpretation/releases/tag/v1.0.2)
 (pre-release; Mac localhost only; technical acceptance on 2026-10-28).
 
 **Source snapshot:** `v1.0.2` tag, under `releases/8504/v1.0.2/`.
@@ -93,8 +97,8 @@ non-distributed PRIMARY_TEST / TEST / WITHHELD datasets.
 - Existing `main` history and prior tags/releases are preserved.
 - Open Draft PRs (including PR #3) are separate and are **not** merged
   into this release by the publication-preparation work.
-- GitHub visibility is controlled independently. Adding this README
-  and LICENSE does **not** mean that the repository is already public.
+- This GitHub repository is currently public. GitHub visibility is independent
+  of installation on the owner's Mac or an institution-wide service deployment.
 - The release remains a Mac-local application; the public repository,
   if activated after the final audit, is a source and documentation
   publication rather than a hosted online application.
