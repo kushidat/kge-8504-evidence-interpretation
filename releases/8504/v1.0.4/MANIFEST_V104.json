@@ -1,0 +1,41 @@
+{
+  "version": "v1.0.4",
+  "status": "RELEASE_CANDIDATE_NOT_PUBLISHED",
+  "parent_dir": "projects/mondo_eval/release_records/8504_8510/isolated/8504_8510_STAGE5_RESULT_FILENAMES_20261107_V01",
+  "parent_sha256": {
+    "streamlit_app_8504_stage5_immutable_save_v01.py": "7128c4859e3cf3d74a668d9750fb893e768577e626ad2c6fedcbc17702a150af",
+    "kge_8504_local_8510_api_stage5.py": "3f551f0d7a0239f64aee384b55a07fe0020adce687ca1d7b006714dd4688e3fa",
+    "kge_8504_stage5_immutable_result.py": "91bcab8b8f51d66be3c1570b7b45adca0cb44ffe2f203a47c2fa534bb8dc3cd9"
+  },
+  "output_dir": "projects/mondo_eval/release_records/8504_8510/isolated/8504_V104_RELEASE_CANDIDATE_20261107_V01",
+  "files": {
+    "MANAGE_V104.py": "0a326c667abd5ac9e847b205d6b2e6c18043f8a182aba9f1b061fa81f945c2b5",
+    "README_MINIMAL_JA.md": "ac567001ce9c254b4904c438c489b037ad403ed9a42513b0a26da84fe9fb7b47",
+    "RELEASE_NOTES_AND_QA_JA.md": "deecd66e6da35ab6bc0d34fa2bd589ecfd55222d4fda1578c531e37bf4a8950f",
+    "kge_8504_local_8510_api_stage5.py": "c84f7eea2d5767188ae8ce18b92fae162dbae5dd08d5d10157d1300995ece600",
+    "kge_8504_stage5_immutable_result.py": "91bcab8b8f51d66be3c1570b7b45adca0cb44ffe2f203a47c2fa534bb8dc3cd9",
+    "streamlit_app_8504_stage5_immutable_save_v01.py": "13f5702a5cb3f677cece035af3c1401a28206f114ba80627d84b67d9ab15624d"
+  },
+  "dependency_dirs": {
+    "stage4c": "projects/mondo_eval/release_records/8504_8510/isolated/8504_8510_STAGE4C_DIRECT_8510_API_20261107_V01",
+    "stage4_preview": "projects/mondo_eval/release_records/8504_8510/isolated/8504_8510_STAGE4_CONSENT_PREVIEW_20261107_V01_FIX1",
+    "stage12": "projects/mondo_eval/release_records/8504_8510/isolated/8504_8510_STAGE12_ISOLATED_V02_20261107",
+    "stage3": "projects/mondo_eval/release_records/8504_8510/isolated/8504_8510_SHARED_8510_CORE_STAGE3_20261107_V01",
+    "v10": "projects/mondo_eval/release_records/8504_8510/isolated/8510_SOURCE_PROVENANCE_SECONDARY_MGI_ISOLATED_V10_20261106",
+    "official_8504": "projects/kge/bridge_node2vec_2026",
+    "python": "projects/mondo_eval/venv_hybrid/bin/python"
+  },
+  "ui_changed_only": "streamlit_app_8504_stage5_immutable_save_v01.py",
+  "other_python_modules_byte_exact": false,
+  "existing_attempt_marker_mutated": false,
+  "formal_8504_8510_8502_mutated": false,
+  "api_calls_during_prepare": 0,
+  "citation_row_format_fix": {
+    "scope": "verified_short_ROW_numbers_source_edges_only",
+    "original_runtime_sha256": "3f551f0d7a0239f64aee384b55a07fe0020adce687ca1d7b006714dd4688e3fa",
+    "derived_runtime_sha256": "c84f7eea2d5767188ae8ce18b92fae162dbae5dd08d5d10157d1300995ece600",
+    "original_v10_source_files_changed": false,
+    "llm_model_api_calls_during_prepare": 0,
+    "scientific_validation": false
+  }
+}
